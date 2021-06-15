@@ -62,6 +62,11 @@ public class BankBalanceExactlyOnce {
         streams.cleanUp();
         streams.start();
 
+        // print the topology
+        System.out.println(streams.toString());
+
+        // shutdown hook to correctly close the streams application
+        Runtime.getRuntime().addShutdownHook(new Thread(streams::close));
 
 
     }
