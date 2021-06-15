@@ -48,5 +48,27 @@ public class BankBalanceExactlyOnce {
         initialBalance.put("balance", 0);
         initialBalance.put("time", Instant.ofEpochMilli(0L).toString());
 
+        KTable<String, JsonNode> bankBalance = bankTransactions
+                .groupByKey(Serdes.String(), jsonSerde)
+                .aggregate(
+                        () -> initialBalance,
+                        (key, transaction, balance) -> newBalance(transaction, balance),
+                        jsonSerde,
+                        "bank-balance-agg"
+                );
+
+    }
+
+    private static JsonNode newBalance(JsonNode transaction, JsonNode balance) {
+        // create a new balance json object
+        ObjectNode newBalance = JsonNodeFactory.instance.objectNode();
+        newBalance.put("count", balance.get("count").asInt() + 1);
+        newBalance.put("balance", balance.get("balance").asInt() + transaction.get("amount").asInt());
+
+        Long balanceEpoch = Instant.parse(balance.get("time").asText()).toEpochMilli();
+        Long transactionEpoch = Instant.parse(transaction.get("time").asText()).toEpochMilli();
+        Instant newBalanceInstant = Instant.ofEpochMilli(Math.max(balanceEpoch, transactionEpoch));
+        newBalance.put("time", newBalanceInstant.toString());
+        return newBalance;
     }
 }
