@@ -38,5 +38,15 @@ public class BankBalanceExactlyOnce {
         final Deserializer<JsonNode> jsonDeserializer = new JsonDeserializer();
         final Serde<JsonNode> jsonSerde = Serdes.serdeFrom(jsonSerializer, jsonDeserializer);
 
+        KStreamBuilder builder = new KStreamBuilder();
+        KStream<String, JsonNode> bankTransactions =
+                builder.stream(Serdes.String(), jsonSerde, "bank-transactions");
+
+        // create the initial json object for balances
+        ObjectNode initialBalance = JsonNodeFactory.instance.objectNode();
+        initialBalance.put("count", 0);
+        initialBalance.put("balance", 0);
+        initialBalance.put("time", Instant.ofEpochMilli(0L).toString());
+
     }
 }
