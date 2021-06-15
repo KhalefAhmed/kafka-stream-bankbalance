@@ -57,6 +57,13 @@ public class BankBalanceExactlyOnce {
                         "bank-balance-agg"
                 );
 
+        bankBalance.to(Serdes.String(), jsonSerde,"bank-balance-exactly-once");
+        KafkaStreams streams = new KafkaStreams(builder, config);
+        streams.cleanUp();
+        streams.start();
+
+
+
     }
 
     private static JsonNode newBalance(JsonNode transaction, JsonNode balance) {
